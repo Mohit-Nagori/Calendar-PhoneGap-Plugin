@@ -28,6 +28,9 @@ import java.util.TimeZone;
 import java.text.SimpleDateFormat;
 
 import static android.provider.CalendarContract.Events;
+import org.json.JSONObject;
+
+
 
 public class Calendar extends CordovaPlugin {
   private static final String HAS_READ_PERMISSION = "hasReadPermission";
@@ -571,7 +574,8 @@ public class Calendar extends CordovaPlugin {
                     argOptionsObject.optLong("recurrenceCount", -1),
                     getPossibleNullString("allday", argOptionsObject),
                     argOptionsObject.optInt("calendarId", 1),
-                    getPossibleNullString("url", argOptionsObject));
+                    getPossibleNullString("url", argOptionsObject),
+                    argOptionsObject.optJSONObject("attendees"));
             if (createdEventID != null) {
               callback.success(createdEventID);
             } else {

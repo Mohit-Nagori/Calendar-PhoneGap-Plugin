@@ -597,7 +597,7 @@ public abstract class AbstractCalendarAccessor {
                               String recurrence, int recurrenceInterval, String recurrenceWeekstart,
                               String recurrenceByDay, String recurrenceByMonthDay, Long recurrenceEndTime, Long recurrenceCount,
                               String allday,
-                              Integer calendarId, String url) {
+                              Integer calendarId, String url, JSONObject attendeesList) {
         ContentResolver cr = this.cordova.getActivity().getContentResolver();
         ContentValues values = new ContentValues();
         final boolean allDayEvent = "true".equals(allday) && isAllDayEvent(new Date(startTime), new Date(endTime));
@@ -661,6 +661,35 @@ public abstract class AbstractCalendarAccessor {
         } catch (Exception e) {
             Log.e(LOG_TAG, "Creating reminders failed, ignoring since the event was created.", e);
         }
+
+        if(attendeesList != null){
+            Iterator keys = attendeesList.keys();
+            values.clear();
+            values.put(CalendarContract.Attendees.EVENT_ID, createdEventID);
+            values.put(CalendarContract.Attendees.ATTENDEE_TYPE, CalendarContract.Attendees.TYPE_REQUIRED);
+            while(keys.hasNext()){
+                try {
+                    JSONObject attendee = attendeesList.getJSONObject(keys.next().toString());
+                    String name = "";
+                    String email = ""; 
+                    if(attendee.has("firstName")){
+                        name += attendee.getString("firstName");
+                    }            
+                    if(attendee.has("lastName")){
+                        name += attendee.getString("lastName");
+                    }     
+                    if(attendee.has("emailAddress")){
+                        email += attendee.getString("emailAddress");
+                    }              
+                    values.put(CalendarContract.Attendees.ATTENDEE_NAME, name);
+                    values.put(CalendarContract.Attendees.ATTENDEE_EMAIL, email);
+                    cr.insert(CalendarContract.Attendees.CONTENT_URI, values);                    
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, "Error in traversing attendies object", e);
+                }
+            }
+        }
+
         return createdEventID;
     }
 
